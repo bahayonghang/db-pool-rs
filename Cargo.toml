@@ -1,0 +1,39 @@
+[package]
+name = "db-pool-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "高性能异步数据库连接池框架"
+license = "MIT"
+repository = "https://github.com/yourusername/db-pool-rs"
+homepage = "https://github.com/yourusername/db-pool-rs"
+documentation = "https://docs.rs/db-pool-rs"
+readme = "README.md"
+keywords = ["database", "connection-pool", "async", "rust", "python"]
+categories = ["database", "asynchronous", "api-bindings"]
+rust-version = "1.70"
+
+[lib]
+name = "db_pool_rs"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["mssql"]
+
+# 数据库支持特性
+mssql = ["tiberius", "tokio-util"]
+postgresql = ["tokio-postgres", "postgres-types", "postgres-native-tls"]
+redis = ["redis-rs", "tokio"]
+sqlite = ["rusqlite", "tokio"]
+influxdb = ["influxdb2", "tokio"]
+
+# 开发和测试特性
+testing = ["tokio-test", "tempfile"]
+benchmarks = ["criterion"]
+python-bindings = ["pyo3", "pyo3-asyncio"]
+
+# 所有数据库支持
+all-databases = ["mssql", "postgresql", "redis", "sqlite", "influxdb"]
+
+# 完整功能
+full = ["all
