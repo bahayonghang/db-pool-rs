@@ -2,38 +2,93 @@
 name = "db-pool-rs"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
 description = "高性能异步数据库连接池框架"
+authors = ["Your Name <bahayonghang@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/yourusername/db-pool-rs"
-homepage = "https://github.com/yourusername/db-pool-rs"
-documentation = "https://docs.rs/db-pool-rs"
-readme = "README.md"
-keywords = ["database", "connection-pool", "async", "rust", "python"]
-categories = ["database", "asynchronous", "api-bindings"]
-rust-version = "1.70"
+keywords = ["database", "pool", "async", "python", "rust"]
+categories = ["database", "asynchronous"]
 
 [lib]
 name = "db_pool_rs"
 crate-type = ["cdylib", "rlib"]
 
+[dependencies]
+# PyO3 for Python bindings
+pyo3 = { version = "0.20", features = ["extension-module", "abi3-py38"] }
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"] }
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+tokio-util = "0.7"
+
+# Database drivers (all optional for modular loading)
+tiberius = { version = "0.12", features = ["sql-browser-tokio", "bigdecimal"], optional = true }
+tokio-postgres = { version = "0.7", optional = true }
+redis = { version = "0.24", features = ["tokio-comp"], optional = true }
+rusqlite = { version = "0.30", features = ["bundled"], optional = true }
+
+# Data processing
+polars = { version = "0.36", features = ["lazy", "temporal", "strings"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Concurrency and utilities
+dashmap = "5.5"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+url = "2.4"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging and monitoring
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+metrics = "0.22"
+opentelemetry = { version = "0.21", optional = true }
+
+# Configuration
+config = "0.13"
+toml = "0.8"
+
+# Async utilities
+async-trait = "0.1"
+futures = "0.3"
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+
 [features]
-default = ["mssql"]
+# 默认特性保持最小化
+default = []
 
-# 数据库支持特性
-mssql = ["tiberius", "tokio-util"]
-postgresql = ["tokio-postgres", "postgres-types", "postgres-native-tls"]
-redis = ["redis-rs", "tokio"]
-sqlite = ["rusqlite", "tokio"]
-influxdb = ["influxdb2", "tokio"]
+# 数据库驱动特性 (使用 dep: 前缀引用可选依赖)
+mssql = ["dep:tiberius"]
+postgresql = ["dep:tokio-postgres"]
+redis = ["dep:redis"]
+sqlite = ["dep:rusqlite"]
+all-databases = ["mssql", "postgresql", "redis", "sqlite"]
 
-# 开发和测试特性
-testing = ["tokio-test", "tempfile"]
-benchmarks = ["criterion"]
-python-bindings = ["pyo3", "pyo3-asyncio"]
+# 功能特性
+monitoring = ["dep:opentelemetry"]
+async-runtime = ["tokio/full"]
 
-# 所有数据库支持
-all-databases = ["mssql", "postgresql", "redis", "sqlite", "influxdb"]
+# 组合特性
+full = ["all-databases", "monitoring"]
+production = ["mssql", "postgresql", "monitoring"]
 
-# 完整功能
-full = ["all
+# 移除不存在的基准测试配置
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 1
+debug = true
